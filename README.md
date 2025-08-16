@@ -1,317 +1,403 @@
 # Industrial IoT Device Management Platform
 
-Bu proje, endüstriyel IoT cihazlarının yönetimi için geliştirilmiş kapsamlı bir platformdur. Spring Boot ve Java kullanılarak oluşturulmuş olup, MQTT üzerinden telemetri verisi alımı, REST ve GraphQL API'leri, gerçek zamanlı WebSocket iletişimi ve kullanıcı yönetimi özelliklerini içerir.
+A comprehensive, enterprise-grade Industrial IoT Device Management Platform built with Spring Boot, providing real-time device monitoring, telemetry data collection, and management capabilities through REST and GraphQL APIs.
 
-## 🚀 Özellikler
+## 🚀 Features
 
-### 🔧 Temel Özellikler
-- **MQTT Telemetri Alımı**: IoT cihazlarından MQTT protokolü ile telemetri verisi alımı
-- **PostgreSQL Veritabanı**: Telemetri verilerinin ve cihaz bilgilerinin saklanması
-- **REST API**: Cihaz yönetimi için kapsamlı REST endpoint'leri
-- **GraphQL API**: Esnek veri sorgulama ve yönetim
-- **WebSocket**: Gerçek zamanlı telemetri verisi akışı
-- **Spring Security**: JWT tabanlı kimlik doğrulama ve yetkilendirme
-- **Rol Tabanlı Güvenlik**: ADMIN, USER, OPERATOR rolleri
+### Core Functionality
+- **Device Management**: Complete CRUD operations for IoT devices
+- **Real-time Telemetry**: MQTT-based telemetry data collection and storage
+- **Dual API Support**: Both REST and GraphQL APIs for flexible integration
+- **Real-time Streaming**: WebSocket support for live telemetry data
+- **User Management**: Role-based security with JWT authentication
+- **Database Support**: PostgreSQL (production) and H2 (development/testing)
 
-### 📊 Cihaz Yönetimi
-- Cihaz kayıt ve güncelleme
-- Cihaz durumu takibi (ONLINE, OFFLINE, MAINTENANCE, ERROR, DISABLED)
-- Cihaz tipi yönetimi (SENSOR, ACTUATOR, GATEWAY, CONTROLLER, CAMERA)
-- Cihaz konum bilgileri
-- Cihaz sahipliği ve yetkilendirme
+### Technical Stack
+- **Backend**: Spring Boot 3.5.4, Java 17
+- **Database**: PostgreSQL, H2 (in-memory)
+- **Messaging**: MQTT (Eclipse Paho)
+- **APIs**: REST API, GraphQL (Spring GraphQL)
+- **Real-time**: WebSocket (STOMP, SockJS)
+- **Security**: Spring Security, JWT
+- **Validation**: Bean Validation
+- **Monitoring**: Spring Boot Actuator
 
-### 📈 Telemetri Verisi
-- Gerçek zamanlı veri alımı
-- Zaman aralığına göre veri sorgulama
-- Veri analizi (ortalama, minimum, maksimum değerler)
-- Veri kalitesi takibi
-- Otomatik veri temizleme
+## 📋 Prerequisites
 
-### 🔐 Güvenlik
-- JWT token tabanlı kimlik doğrulama
-- BCrypt şifre hash'leme
-- Rol tabanlı erişim kontrolü
-- CORS konfigürasyonu
-- Güvenli API endpoint'leri
-
-## 🛠️ Teknolojiler
-
-- **Java 17**
-- **Spring Boot 3.5.4**
-- **Spring Security**
-- **Spring Data JPA**
-- **Spring WebSocket (STOMP)**
-- **Spring GraphQL**
-- **PostgreSQL**
-- **MQTT (Eclipse Paho)**
-- **JWT (jjwt)**
-- **Maven**
-
-## 📋 Gereksinimler
-
-- Java 17 veya üzeri
+- Java 17 or higher
 - Maven 3.6+
-- PostgreSQL 12+
-- MQTT Broker (Mosquitto, HiveMQ, vb.)
+- PostgreSQL (for production)
+- MQTT Broker (optional, for telemetry)
 
-## 🚀 Kurulum
+## 🛠️ Installation & Setup
 
-### 1. Veritabanı Kurulumu
-
-PostgreSQL veritabanında `iot_platform` adında bir veritabanı oluşturun:
-
-```sql
-CREATE DATABASE iot_platform;
+### 1. Clone the Repository
+```bash
+git clone https://github.com/yourusername/iot-device-management.git
+cd iot-device-management
 ```
 
-### 2. Uygulama Konfigürasyonu
+### 2. Configuration
 
-`src/main/resources/application.properties` dosyasını kendi ortamınıza göre düzenleyin:
+#### Development Environment (H2 Database)
+The application is configured to run with H2 in-memory database by default for development:
 
 ```properties
-# PostgreSQL Veritabanı
+# Default configuration in application.properties
+spring.datasource.url=jdbc:h2:mem:iotdb
+spring.datasource.driver-class-name=org.h2.Driver
+spring.jpa.hibernate.ddl-auto=create-drop
+```
+
+#### Production Environment (PostgreSQL)
+For production, use PostgreSQL configuration:
+
+```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/iot_platform
-spring.datasource.username=your_username
+spring.datasource.username=postgres
 spring.datasource.password=your_password
-
-# MQTT Broker
-mqtt.broker.url=tcp://localhost:1883
-mqtt.client.id=iot-platform-server
-
-# JWT Secret
-jwt.secret=your-secret-key-here-make-it-long-and-secure-in-production
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 ```
 
-### 3. Uygulamayı Çalıştırma
+### 3. Running the Application
 
+#### Using Maven Wrapper (Recommended)
 ```bash
-# Projeyi derleme
-mvn clean install
+# Development mode (H2)
+.\mvnw.cmd spring-boot:run
 
-# Uygulamayı çalıştırma
-mvn spring-boot:run
+# With specific profile
+.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev
+
+# Production mode (PostgreSQL)
+.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=prod
 ```
 
-Uygulama varsayılan olarak `http://localhost:8080` adresinde çalışacaktır.
+#### Using Docker
+```bash
+# Build the application
+docker build -t iot-device-management .
 
-## 📚 API Dokümantasyonu
+# Run with Docker Compose (includes PostgreSQL, MQTT, Redis, Nginx)
+docker-compose up -d
+```
 
-### REST API Endpoint'leri
+## 🏗️ Project Structure
 
-#### Kimlik Doğrulama
-- `POST /api/auth/register` - Kullanıcı kaydı
-- `POST /api/auth/login` - Kullanıcı girişi
-- `POST /api/auth/validate` - Token doğrulama
-- `GET /api/auth/me` - Mevcut kullanıcı bilgileri
+```
+src/
+├── main/
+│   ├── java/com/yourcompany/iotplatform/iot_device_management/
+│   │   ├── config/           # Configuration classes
+│   │   ├── controller/       # REST API controllers
+│   │   ├── dto/             # Data Transfer Objects
+│   │   ├── entity/          # JPA entities
+│   │   ├── exception/       # Custom exceptions
+│   │   ├── graphql/         # GraphQL resolvers
+│   │   ├── repository/      # Data repositories
+│   │   ├── service/         # Business logic services
+│   │   └── websocket/       # WebSocket configuration
+│   └── resources/
+│       ├── application.properties      # Default configuration
+│       ├── application-dev.properties  # Development profile
+│       ├── application-test.properties # Test profile
+│       └── graphql/
+│           └── schema.graphqls         # GraphQL schema
+```
 
-#### Cihaz Yönetimi
-- `GET /api/devices` - Tüm cihazları listeleme
-- `GET /api/devices/{id}` - Cihaz detayları
-- `POST /api/devices` - Yeni cihaz oluşturma
-- `PUT /api/devices/{id}` - Cihaz güncelleme
-- `DELETE /api/devices/{id}` - Cihaz silme
-- `GET /api/devices/my-devices` - Kullanıcının cihazları
-- `GET /api/devices/online` - Online cihazlar
-- `GET /api/devices/statistics` - Cihaz istatistikleri
+## 🔌 API Documentation
 
-#### Telemetri Verisi
-- `GET /api/telemetry/device/{deviceId}` - Cihaz telemetri verileri
-- `GET /api/telemetry/device/{deviceId}/latest` - En son telemetri verisi
-- `GET /api/telemetry/device/{deviceId}/timerange` - Zaman aralığı telemetri verileri
-- `GET /api/telemetry/device/{deviceId}/average` - Ortalama değer hesaplama
+### REST API Endpoints
 
-### GraphQL Endpoint'i
+#### Device Management
+- `GET /api/devices` - List all devices
+- `GET /api/devices/{id}` - Get device by ID
+- `POST /api/devices` - Create new device
+- `PUT /api/devices/{id}` - Update device
+- `DELETE /api/devices/{id}` - Delete device
 
-GraphQL endpoint'i: `http://localhost:8080/graphql`
-GraphiQL arayüzü: `http://localhost:8080/graphiql`
+#### User Management
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/users` - List users (admin only)
 
-#### Örnek GraphQL Sorguları
+#### Telemetry Data
+- `GET /api/telemetry/device/{deviceId}` - Get device telemetry
+- `GET /api/telemetry/aggregate` - Get aggregated telemetry data
 
+### GraphQL API
+
+#### Queries
 ```graphql
-# Kullanıcı bilgilerini alma
-query {
-  me {
-    id
-    username
-    email
-    role
-    devices {
-      id
-      deviceId
-      name
-      status
-    }
-  }
-}
-
-# Cihazları listeleme
+# Get all devices
 query {
   devices {
     id
-    deviceId
     name
-    deviceType
+    type
     status
-    owner {
-      username
+    telemetryData {
+      temperature
+      humidity
+      timestamp
     }
   }
 }
 
-# Telemetri verilerini alma
+# Get device by ID
 query {
-  telemetryData(deviceId: "1", limit: 10) {
+  device(id: "1") {
     id
-    timestamp
-    dataType
-    valueNumeric
-    unit
+    name
+    type
+    status
   }
 }
 ```
 
-### WebSocket Endpoint'i
+#### Mutations
+```graphql
+# Create device
+mutation {
+  createDevice(device: {
+    name: "Sensor-001"
+    type: "TEMPERATURE"
+    location: "Building A"
+  }) {
+    id
+    name
+    status
+  }
+}
 
-WebSocket bağlantı noktası: `ws://localhost:8080/ws`
-
-#### Telemetri Verisi Aboneliği
-```javascript
-// SockJS ve STOMP kullanarak bağlantı
-const socket = new SockJS('/ws');
-const stompClient = Stomp.over(socket);
-
-stompClient.connect({}, function (frame) {
-    // Belirli cihazın telemetri verilerini dinleme
-    stompClient.subscribe('/topic/telemetry/device-001', function (message) {
-        const telemetryData = JSON.parse(message.body);
-        console.log('Yeni telemetri verisi:', telemetryData);
-    });
-});
-```
-
-## 🔧 MQTT Konfigürasyonu
-
-### Topic Yapısı
-- `iot/{deviceId}/telemetry` - Telemetri verisi gönderimi
-- `iot/{deviceId}/status` - Cihaz durumu güncellemesi
-- `iot/{deviceId}/command` - Cihaza komut gönderimi
-
-### Örnek MQTT Mesajı
-```json
-{
-  "timestamp": "2024-01-15T10:30:00Z",
-  "dataType": "temperature",
-  "value": 25.5,
-  "unit": "°C",
-  "quality": 100
+# User login
+mutation {
+  login(credentials: {
+    username: "admin"
+    password: "password"
+  }) {
+    token
+    user {
+      id
+      username
+      role
+    }
+  }
 }
 ```
 
-## 🧪 Test
+#### Subscriptions
+```graphql
+# Real-time telemetry updates
+subscription {
+  telemetryUpdate(deviceId: "1") {
+    temperature
+    humidity
+    timestamp
+  }
+}
+```
 
-### Unit Testler
+## 🔐 Security
+
+### Authentication
+- JWT-based authentication
+- Role-based access control (USER, ADMIN)
+- Password encryption with BCrypt
+
+### Authorization
+- `@PreAuthorize` annotations for method-level security
+- GraphQL field-level security
+- REST API endpoint protection
+
+## 📊 Monitoring & Health Checks
+
+### Actuator Endpoints
+- `GET /actuator/health` - Application health status
+- `GET /actuator/info` - Application information
+- `GET /actuator/metrics` - Application metrics
+
+### Database Console
+- H2 Console: `http://localhost:8080/h2-console` (development only)
+
+## 🧪 Testing
+
+### Running Tests
 ```bash
-mvn test
+# Run all tests
+.\mvnw.cmd test
+
+# Run with specific profile
+.\mvnw.cmd test -Dspring-boot.run.profiles=test
+
+# Run integration tests
+.\mvnw.cmd verify
 ```
 
-### Integration Testler
-```bash
-mvn verify
-```
+### Test Configuration
+- H2 in-memory database for tests
+- Mock MQTT broker
+- Test data initialization
 
-## 📊 Monitoring
+## 🐳 Docker Deployment
 
-### Actuator Endpoint'leri
-- `GET /actuator/health` - Uygulama sağlık durumu
-- `GET /actuator/info` - Uygulama bilgileri
-- `GET /actuator/metrics` - Metrikler
+### Docker Compose Setup
+The project includes a complete Docker Compose configuration:
 
-## 🔒 Güvenlik
-
-### Roller ve Yetkiler
-- **ADMIN**: Tüm işlemleri yapabilir
-- **USER**: Kendi cihazlarını yönetebilir
-- **OPERATOR**: Cihazları görüntüleyebilir, telemetri verilerini okuyabilir
-
-### JWT Token Kullanımı
-```bash
-# Login isteği
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"usernameOrEmail":"user@example.com","password":"password"}'
-
-# Token ile API çağrısı
-curl -X GET http://localhost:8080/api/devices \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
-
-## 🚀 Deployment
-
-### Docker ile Deployment
-```dockerfile
-FROM openjdk:17-jdk-slim
-COPY target/iot-device-management-0.0.1-SNAPSHOT.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java","-jar","/app.jar"]
-```
-
-### Docker Compose
 ```yaml
-version: '3.8'
 services:
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/iot_platform
-    depends_on:
-      - db
-      - mqtt
-  
-  db:
-    image: postgres:13
+  postgres:
+    image: postgres:15
     environment:
       POSTGRES_DB: iot_platform
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-  
+    ports:
+      - "5432:5432"
+
   mqtt:
     image: eclipse-mosquitto:latest
     ports:
       - "1883:1883"
-    volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - "9001:9001"
 
-volumes:
-  postgres_data:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - mqtt
+      - redis
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    depends_on:
+      - app
 ```
 
-## 🤝 Katkıda Bulunma
+### Environment Variables
+Create a `.env` file based on `env.example`:
 
-1. Fork yapın
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add some amazing feature'`)
-4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
-5. Pull Request oluşturun
+```bash
+# Database
+POSTGRES_PASSWORD=your_secure_password
+POSTGRES_DB=iot_platform
 
-## 📄 Lisans
+# MQTT
+MQTT_BROKER_URL=tcp://mqtt:1883
 
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakın.
+# Application
+JWT_SECRET=your_jwt_secret_key
+APP_PORT=8080
+```
 
-## 📞 İletişim
+## 🔧 Configuration Profiles
 
-Proje hakkında sorularınız için:
-- Email: your-email@example.com
-- GitHub Issues: [Proje Issues Sayfası](https://github.com/yourusername/iot-device-management/issues)
+### Development Profile (`dev`)
+- H2 in-memory database
+- MQTT disabled
+- Debug logging enabled
+- H2 console enabled
 
-## 🙏 Teşekkürler
+### Test Profile (`test`)
+- H2 in-memory database
+- Mock services
+- Test data initialization
 
-Bu proje aşağıdaki açık kaynak projelerin kullanımı ile mümkün olmuştur:
-- Spring Boot
-- Spring Security
-- PostgreSQL
-- Eclipse Paho MQTT Client
-- GraphQL Java Tools
+### Production Profile (`prod`)
+- PostgreSQL database
+- MQTT enabled
+- Production logging
+- Security hardening
+
+## 📈 Performance & Scalability
+
+### Database Optimization
+- Connection pooling with HikariCP
+- JPA query optimization
+- Indexed database fields
+
+### Caching
+- Redis integration for session management
+- Application-level caching
+- Query result caching
+
+### Monitoring
+- Spring Boot Actuator metrics
+- Custom health indicators
+- Performance monitoring
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Code Style
+- Follow Java coding conventions
+- Use meaningful variable and method names
+- Add comprehensive comments for complex logic
+- Write unit tests for new features
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+### Common Issues
+
+#### ANTLR Version Conflict
+If you encounter ANTLR version conflicts:
+```bash
+.\mvnw.cmd dependency:purge-local-repository -DmanualInclude="org.antlr"
+.\mvnw.cmd clean
+.\mvnw.cmd compile
+```
+
+#### Database Connection Issues
+- Ensure PostgreSQL is running (production)
+- Check database credentials
+- Verify network connectivity
+
+#### MQTT Connection Issues
+- Ensure MQTT broker is running
+- Check broker URL and credentials
+- Verify firewall settings
+
+### Getting Help
+- Create an issue on GitHub
+- Check existing issues for solutions
+- Review the documentation
+
+## 🗺️ Roadmap
+
+- [ ] Kubernetes deployment support
+- [ ] Advanced analytics dashboard
+- [ ] Device firmware management
+- [ ] Multi-tenant architecture
+- [ ] Advanced alerting system
+- [ ] Data export capabilities
+- [ ] Mobile application
+- [ ] Machine learning integration
+
+## 🙏 Acknowledgments
+
+- Spring Boot team for the excellent framework
+- Eclipse Paho for MQTT client library
+- GraphQL Java team for GraphQL support
+- PostgreSQL community for the robust database
+
+---
+
+**Built with ❤️ using Spring Boot and Java**
