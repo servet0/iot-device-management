@@ -1,0 +1,170 @@
+# GraphQL Schema for IoT Device Management Platform
+
+type User {
+    id: ID!
+    username: String!
+    email: String!
+    role: UserRole!
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+    devices: [Device!]
+}
+
+enum UserRole {
+    ADMIN
+    USER
+    OPERATOR
+}
+
+type Device {
+    id: ID!
+    deviceId: String!
+    name: String!
+    description: String
+    deviceType: DeviceType!
+    status: DeviceStatus!
+    lastSeen: String
+    ipAddress: String
+    firmwareVersion: String
+    hardwareVersion: String
+    locationLat: Float
+    locationLng: Float
+    locationDescription: String
+    owner: User!
+    createdAt: String!
+    updatedAt: String!
+    isActive: Boolean!
+    telemetryData: [TelemetryData!]
+}
+
+enum DeviceType {
+    SENSOR
+    ACTUATOR
+    GATEWAY
+    CONTROLLER
+    CAMERA
+}
+
+enum DeviceStatus {
+    ONLINE
+    OFFLINE
+    MAINTENANCE
+    ERROR
+    DISABLED
+}
+
+type TelemetryData {
+    id: ID!
+    device: Device!
+    timestamp: String!
+    topic: String!
+    payload: String!
+    dataType: String
+    unit: String
+    valueNumeric: Float
+    valueString: String
+    valueBoolean: Boolean
+    quality: Int
+    receivedAt: String!
+}
+
+type DeviceStatistics {
+    totalDevices: Int!
+    onlineDevices: Int!
+    offlineDevices: Int!
+    sensorDevices: Int!
+    actuatorDevices: Int!
+}
+
+type AuthResponse {
+    message: String!
+    token: String
+    user: User
+}
+
+input LoginInput {
+    usernameOrEmail: String!
+    password: String!
+}
+
+input RegisterInput {
+    username: String!
+    email: String!
+    password: String!
+}
+
+input DeviceInput {
+    deviceId: String!
+    name: String!
+    description: String
+    deviceType: DeviceType!
+    ipAddress: String
+    firmwareVersion: String
+    hardwareVersion: String
+    locationLat: Float
+    locationLng: Float
+    locationDescription: String
+}
+
+input DeviceUpdateInput {
+    deviceId: String
+    name: String
+    description: String
+    deviceType: DeviceType
+    ipAddress: String
+    firmwareVersion: String
+    hardwareVersion: String
+    locationLat: Float
+    locationLng: Float
+    locationDescription: String
+}
+
+type Query {
+    # User queries
+    me: User
+    user(id: ID!): User
+    users: [User!]!
+    usersByRole(role: UserRole!): [User!]!
+    
+    # Device queries
+    device(id: ID!): Device
+    deviceByDeviceId(deviceId: String!): Device
+    devices: [Device!]!
+    myDevices: [Device!]!
+    devicesByStatus(status: DeviceStatus!): [Device!]!
+    devicesByType(deviceType: DeviceType!): [Device!]!
+    onlineDevices: [Device!]!
+    searchDevices(name: String!): [Device!]!
+    deviceStatistics: DeviceStatistics!
+    
+    # Telemetry queries
+    telemetryData(deviceId: ID!, limit: Int): [TelemetryData!]!
+    telemetryDataByTimeRange(deviceId: ID!, startTime: String!, endTime: String!): [TelemetryData!]!
+    latestTelemetryData(deviceId: ID!): TelemetryData
+}
+
+type Mutation {
+    # Auth mutations
+    login(input: LoginInput!): AuthResponse!
+    register(input: RegisterInput!): AuthResponse!
+    
+    # User mutations
+    updateUser(id: ID!, username: String, email: String, role: UserRole, isActive: Boolean): User!
+    deleteUser(id: ID!): Boolean!
+    changePassword(id: ID!, newPassword: String!): Boolean!
+    
+    # Device mutations
+    createDevice(input: DeviceInput!): Device!
+    updateDevice(id: ID!, input: DeviceUpdateInput!): Device!
+    deleteDevice(id: ID!): Boolean!
+    updateDeviceStatus(id: ID!, status: DeviceStatus!): Device!
+}
+
+type Subscription {
+    # Real-time subscriptions
+    deviceStatusChanged: Device!
+    telemetryDataReceived(deviceId: String!): TelemetryData!
+    deviceConnected(deviceId: String!): Device!
+    deviceDisconnected(deviceId: String!): Device!
+}
